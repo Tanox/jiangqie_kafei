@@ -1,5 +1,5 @@
 /*
- * 酱茄小程序开源版 v1.1.0
+ * 酱茄小程序开源版 v1.2.2
  * Author: 酱茄
  * Help document: https://www.jiangqie.com/ky
  * github: https://github.com/longwenjunjie/jiangqie_kafei
@@ -128,6 +128,7 @@ Page({
                     baseLine: 'middle',
                     textAlign: 'center',
                     text: this.data.post.title,
+                    width: 600,
                     fontSize: 38,
                     color: '#FFFFFF',
                 },
@@ -386,7 +387,7 @@ Page({
                 loaded: true,
                 loadding: false,
                 comments: refresh ? res.data : that.data.comments.concat(res.data),
-                pullUpOn: res.data.length == Constants.JQ_PER_PAGE_COUNT,
+                pullUpOn: res.data.length >= Constants.JQ_PER_PAGE_COUNT,
             });
         });
     },

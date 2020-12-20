@@ -164,7 +164,7 @@ class JiangQie_API_Admin
             'id'                => $this->jiangqie_api,              // Required, meta box id, unique per page, to save: get_option( id )
             'parent'            => 'plugins.php',                   // Parent page of plugin menu (default Settings [options-general.php])
             'submenu'           => false,                            // Required for submenu
-            'title'             => '酱茄设置',                       // The title of the options page and the name in admin menu
+            'title'             => '酱茄Free小程序',                       // The title of the options page and the name in admin menu
             'capability'        => 'manage_options',                // The capability needed to view the page
             'plugin_basename'   =>  plugin_basename(plugin_dir_path(__DIR__) . $this->jiangqie_api . '.php'),
             'tabbed'            => true,
@@ -270,7 +270,7 @@ class JiangQie_API_Admin
          */
 
         $content = '欢迎使用酱茄小程序开源版';
-        $res = wp_remote_get("https://key.jiangqie.com/api/goods/description?goods_id=2", ['timeout' => 1]);
+        $res = wp_remote_get("https://key.jiangqie.com/api/goods/description?id=jq_xcx_free", ['timeout' => 1]);
 		if (!is_wp_error($res) && $res['response']['code'] == 200) {
 			$data = json_decode($res['body'], TRUE);
 			if ($data['code'] == 1) {
@@ -382,6 +382,14 @@ class JiangQie_API_Admin
                     'id'    => 'default_thumbnail',
                     'type'  => 'image',
                     'title' => '默认微缩图',
+                ),
+
+                array(
+                    'id'      => 'jiangqie_switch_stick',
+                    'type'    => 'switcher',
+                    'title'   => '置顶功能',
+                    'label'   => '是否开启置顶功能',
+                    'default' => 'no',
                 ),
             )
         );
@@ -710,12 +718,6 @@ class JiangQie_API_Admin
                     'type'  => 'image',
                     'title' => '顶部背景图',
                 ),
-
-                // array(
-                //     'id'    => 'copyright_logo',
-                //     'type'  => 'image',
-                //     'title' => '版权LOGO',
-                // ),
 
                 array(
                     'type'    => 'group',

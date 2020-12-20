@@ -152,7 +152,7 @@ class JiangQie_API_Post_Controller extends JiangQie_API_Base_Controller
 			$args['category__not_in'] = explode(',', $hide_cat);
 		}
 
-		$posts = $this->get_posts($args);
+		$posts = $this->get_posts($args, true);
 		return $this->make_success($posts);
 	}
 
@@ -466,8 +466,9 @@ class JiangQie_API_Post_Controller extends JiangQie_API_Base_Controller
 
 		$args = [
 			'post__in' => array_column($post_ids, $field),
+			'orderby' => 'post__in',
 			'posts_per_page' => $per_page_count,
-			'orderby' => 'post__in'
+			'ignore_sticky_posts' => 1,
 		];
 
 		$posts = $this->get_posts($args);
@@ -477,11 +478,32 @@ class JiangQie_API_Post_Controller extends JiangQie_API_Base_Controller
 	/**
 	 * 处理文章
 	 */
-	private function get_posts($args)
+	private function get_posts($args, $qstick=false)
 	{
-		$query = new WP_Query();
-		$result = $query->query($args);
-		$posts = apply_filters('jiangqie_post_for_list', $result);
+		if ($qstick && JiangQie_API::option_value('jiangqie_switch_stick') == 'yes') {
+			//第一页获取置顶帖子
+			if ($args['offset'] == 0) {
+				$posts_stick = $this->_getStickPosts($args);
+			} else {
+				$posts_stick = [];
+			}
+			$posts_stick = apply_filters('jiangqie_post_for_list', $posts_stick);
+			foreach ($posts_stick as &$post) {
+				$post['stick'] = 1;
+			}
+
+			$args['post__not_in'] = get_option('sticky_posts');
+			$query = new WP_Query();
+			$posts_common = $query->query($args);
+			$posts_common = apply_filters('jiangqie_post_for_list', $posts_common);
+
+			$posts = array_merge($posts_stick, $posts_common);
+		} else {
+			$query = new WP_Query();
+			$result = $query->query($args);
+
+			$posts = apply_filters('jiangqie_post_for_list', $result);
+		}
 
 		foreach ($posts as &$post) {
 			//查询tag
@@ -576,6 +598,23 @@ class JiangQie_API_Post_Controller extends JiangQie_API_Base_Controller
 		$this->handle_import_file($qrcode);
 
 		return $this->make_success($qrcode_link);
+	}
+
+	/**
+	 * 获取置顶的文章
+	 */
+	private function _getStickPosts($args)
+	{
+		$sticky_posts = get_option('sticky_posts');
+		if (!$sticky_posts) {
+			return [];
+		}
+		$args['posts_per_page'] = -1;
+		$args['post__in'] = $sticky_posts;
+		$args['ignore_sticky_posts'] = 1;
+		$query = new WP_Query();
+		$posts = $query->query($args);
+		return $posts;
 	}
 
 }

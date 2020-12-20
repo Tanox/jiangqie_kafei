@@ -91,22 +91,19 @@ class JiangQie_API_Setting_Controller extends JiangQie_API_Base_Controller
 		if (!empty($slide_ids)) {
 			$slide_ids = explode(',', $slide_ids);
 			$args = [
-				'posts_per_page' => JiangQie_API::POSTS_PER_PAGE,
 				'post__in' => $slide_ids,
+				'orderby' => 'post__in',
+				'posts_per_page' => -1,
+				'ignore_sticky_posts' => 1
 			];
 
 			$query = new WP_Query();
 			$result = $query->query($args);
-
-			foreach ($slide_ids as $slide_id) {
-				foreach ($result as $item) {
-					if ($slide_id == $item->ID) {
-						$slides[] = [
-							'id' => $item->ID,
-							'thumbnail' => apply_filters('jiangqie_post_thumbnail', $item->ID)
-						];
-					}
-				}
+			foreach ($result as $item) {
+				$slides[] = [
+					'id' => $item->ID,
+					'thumbnail' => apply_filters('jiangqie_post_thumbnail', $item->ID)
+				];
 			}
 		}
 		$data['slide'] = $slides;
@@ -114,9 +111,11 @@ class JiangQie_API_Setting_Controller extends JiangQie_API_Base_Controller
 		//图标导航
 		$icon_nav_org = JiangQie_API::option_value('home_icon_nav');
 		$icon_nav = [];
-		foreach ($icon_nav_org as $item) {
-			if ($item['enable'] == 'yes') {
-				$icon_nav[] = $item;
+		if (is_array($icon_nav_org)) {
+			foreach ($icon_nav_org as $item) {
+				if ($item['enable'] == 'yes') {
+					$icon_nav[] = $item;
+				}
 			}
 		}
 		$data['icon_nav'] = $icon_nav;
@@ -151,23 +150,20 @@ class JiangQie_API_Setting_Controller extends JiangQie_API_Base_Controller
 		if (!empty($hot_ids)) {
 			$hot_ids = explode(',', $hot_ids);
 			$args = [
-				'posts_per_page' => JiangQie_API::POSTS_PER_PAGE,
 				'post__in' => $hot_ids,
+				'orderby' => 'post__in',
+				'posts_per_page' => -1,
+				'ignore_sticky_posts' => 1
 			];
 
 			$query = new WP_Query();
 			$result = $query->query($args);
-
-			foreach ($hot_ids as $hot_id) {
-				foreach ($result as $item) {
-					if ($hot_id == $item->ID) {
-						$hots[] = [
-							'id' => $item->ID,
-							'title' => $item->post_title,
-							'thumbnail' => apply_filters('jiangqie_post_thumbnail', $item->ID)
-						];
-					}
-				}
+			foreach ($result as $item) {
+				$hots[] = [
+					'id' => $item->ID,
+					'title' => $item->post_title,
+					'thumbnail' => apply_filters('jiangqie_post_thumbnail', $item->ID)
+				];
 			}
 		}
 		$data['hot'] = $hots;
